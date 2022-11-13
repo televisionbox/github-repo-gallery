@@ -25,4 +25,20 @@ const displayUserInfo = function (data) {
     </div>
   `;
   overview.append(div);
+  gitRepos();
+};
+
+const gitRepos = async function () {
+  const fetchRepos = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+  const repoData = await fetchRepos.json();
+  displayRepos(repoData);
+};
+
+const displayRepos = function (repos) {
+  for (const repo of repos) {
+    const repoItem = document.createElement("li");
+    repoItem.classList.add("repo");
+    repoItem.innerHTML = `<h3>${repo.name}</h3>`;
+    repoList.append(repoItem);
+  }
 };
