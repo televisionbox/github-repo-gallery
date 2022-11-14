@@ -6,15 +6,17 @@ const repoData = document.querySelector(".repo-data");
 const backToRepos = document.querySelector(".view-repos");
 const filterInput = document.querySelector(".filter-repos");
 
-const gitUserInfo = async function () {
-  const userInfo = await fetch(`https://api.github.com/users/${username}`);
-  const data = await userInfo.json();
-  displayUserInfo(data);
-};
 
-gitUserInfo();
+const getProfile = async function(){
+    const response = await fetch(`https://api.github.com/users/${username}`);
+    const profile = await response.json();
+    console.log(profile);
+    displayUserInfo(profile);
+}
 
-const displayUserInfo = function (data) {
+getProfile();
+
+const displayUserInfo = function(profile){
     const div = document.createElement("div");
     div.classList.add("user-info");
     div.innerHTML = `<figure>
@@ -35,72 +37,69 @@ const fetchRepos = async function(){
     displayRepos(repoResponse);
 };
 
-const displayRepos = function (repos) {
-  for (const repo of repos) {
-    const repoItem = document.createElement("li");
-    repoItem.classList.add("repo");
-    repoItem.innerHTML = `<h3>${repo.name}</h3>`;
-    repoList.append(repoItem);
-  }
+fetchRepos();
+
+const displayRepos = function(repos){
+    for(const repo of repos){
+        const li = document.createElement("li");
+        li.classList.add("repo");
+        li.innerHTML = `<h3>${repo.name}</h3>`;
+        repoList.append(li);
+    }
+    filterInput.classList.remove("hide");
 };
 
-repoList.addEventListener("click", function (e) {
-  if (e.target.matches("h3")) {
-    const repoName = e.target.innerText;
-    getRepoInfo(repoName);
-  }
+repoList.addEventListener("click", function(e){
+    if(e.target.matches("h3")){
+        const repoName = e.target.innerText;
+        getRepoInfo(repoName);
+    }
 });
 
-const getRepoInfo = async function (repoName) {
-  const fetchInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
-  const repoInfo = await fetchInfo.json();
-  console.log(repoInfo);
-  // Grab languages
-  const fetchLanguages = await fetch(repoInfo.languages_url);
-  const languageData = await fetchLanguages.json();
+const getRepoInfo = async function(repoName){
+    const fetchInfo = await fetch (`https://api.github.com/repos/${username}/${repoName}`);
+    const repoInfo = await fetchInfo.json();
+    const fetchLanguages = await fetch(repoInfo.languages_url);
+    const languageData = await fetchLanguages.json();
+    const languages = [];
+    for(const language in languageData){
+        languages.push(language);
+    }
+    console.log(languages);
+    displaySpecificRepo(repoInfo, languages);
+}
 
-  // Make a list of languages
-  const languages = [];
-  for (const language in languageData) {
-    languages.push(language);
-  }
-
-  displayRepoInfo(repoInfo, languages);
-};
-
-const displayRepoInfo = function (repoInfo, languages) {
-  repoData.innerHTML = "";
-  repoData.classList.remove("hide");
-  allReposContainer.classList.add("hide");
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <h3>Name: ${repoInfo.name}</h3>
+const displaySpecificRepo = function(repoInfo, languages){
+    repoData.innerHTML = "";
+    const div = document.createElement("div");
+    div.innerHTML = `<h3>Name: ${repoInfo.name}</h3>
     <p>Description: ${repoInfo.description}</p>
     <p>Default Branch: ${repoInfo.default_branch}</p>
     <p>Languages: ${languages.join(", ")}</p>
-    <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>
-  `;
-  repoData.append(div);
-};
+    <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>`;
+    repoData.append(div);
+    repoData.classList.remove("hide");
+    repos.classList.add("hide");
+    backToRepos.classList.remove("hide");
+}
 
-viewReposButton.addEventListener("click", function () {
-  allReposContainer.classList.remove("hide");
-  repoData.classList.add("hide");
-  viewReposButton.classList.add("hide");
+backToRepos.addEventListener("click", function(){
+    repos.classList.remove("hide");
+    repoData.classList.add("hide");
+    backToRepos.classList.add("hide");
+
 });
 
-// // Dynamic search
-filterInput.addEventListener("input", function (e) {
-  const searchText = e.target.value;
-  const repos = document.querySelectorAll(".repo");
-  const searchLowerText = searchText.toLowerCase();
-
-  for (const repo of repos) {
-    const repoLowerText = repo.innerText.toLowerCase();
-    if (repoLowerText.includes(searchLowerText)) {
-      repo.classList.remove("hide");
-    } else {
-      repo.classList.add("hide");
+filterInput.addEventListener("input", function(e){
+    const searchText = e.target.value;
+    const repos = document.querySelectorAll(".repo");
+    const lowerSearchText = searchText.toLowerCase();
+    for(const repo of repos){
+        const lowerRepo = repo.innerText.toLowerCase();
+        if(!lowerRepo.includes(lowerSearchText)){
+            repo.classList.add("hide");
+        }else{
+            repo.classList.remove("hide");
+        }
     }
-  }
 });
