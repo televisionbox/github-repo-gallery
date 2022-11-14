@@ -1,6 +1,10 @@
-
 const overview = document.querySelector(".overview");
-const username = "redrambles";
+const username = "televisionbox";
+const repoList = document.querySelector(".repo-list");
+const repos = document.querySelector(".repos");
+const repoData = document.querySelector(".repo-data");
+const backToRepos = document.querySelector(".view-repos");
+const filterInput = document.querySelector(".filter-repos");
 
 const gitUserInfo = async function () {
   const userInfo = await fetch(`https://api.github.com/users/${username}`);
@@ -11,27 +15,24 @@ const gitUserInfo = async function () {
 gitUserInfo();
 
 const displayUserInfo = function (data) {
-  const div = document.createElement("div");
-  div.classList.add("user-info");
-  div.innerHTML = `
-    <figure>
-      <img alt="user avatar" src=${data.avatar_url} />
-    </figure>
-    <div>
-      <p><strong>Name:</strong> ${data.name}</p>
-      <p><strong>Bio:</strong> ${data.bio}</p>
-      <p><strong>Location:</strong> ${data.location}</p>
-      <p><strong>Number of public repos:</strong> ${data.public_repos}</p>
-    </div>
-  `;
-  overview.append(div);
-  gitRepos();
+    const div = document.createElement("div");
+    div.classList.add("user-info");
+    div.innerHTML = `<figure>
+            <img alt="user avatar" src=${profile.avatar_url} />
+        </figure>
+        <div>
+            <p><strong>Name:</strong> ${profile.name}</p>
+            <p><strong>Bio:</strong> ${profile.bio}</p>
+            <p><strong>Location:</strong> ${profile.location}</p>
+            <p><strong>Number of public repos:</strong> ${profile.public_repos}</p>
+        </div>`;
+    overview.append(div);
 };
 
-const gitRepos = async function () {
-  const fetchRepos = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
-  const repoData = await fetchRepos.json();
-  displayRepos(repoData);
+const fetchRepos = async function(){
+    const repos = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+    const repoResponse = await repos.json();
+    displayRepos(repoResponse);
 };
 
 const displayRepos = function (repos) {
